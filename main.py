@@ -1,6 +1,6 @@
 import numpy as np
 
-# generate all numbers from [1,10] (will subtract 1 at end to make [0,9]
+# generate all numbers from [1,10] (will subtract 1 at end to make [0,9])
 n = np.arange(1,11)
 # generate random code
 code = np.random.choice(n, 3, replace=False)
@@ -30,23 +30,47 @@ mat = [mat1,mat2,mat3,mat4,mat5]
 puzzle = np.dot(mat,code)
 
 # Generate array of remaining digits
-other = np.delete(n,code)
-# Choose 6 of these (i.e. remove one from this list which will not feature in puzzle)
-other = np.random.choice(other, 6, replace = False)
+other = np.delete(n,code-1)
 
 # Randomly choose digits for missing puzzle entries
-for i in range(puzzle.shape[0]):
-    options = other
-    for j in range(puzzle.shape[1]):
-        if puzzle[i,j] not in code:
-            temp = np.random.choice(options)
-            puzzle[i,j] = temp
-            options = np.setdiff1d(options,temp)
+rank=0
+while rank!=5:
+    for i in range(puzzle.shape[0]):
+        options = other
+        for j in range(puzzle.shape[1]):
+            if puzzle[i,j] not in code:
+                temp = np.random.choice(options)
+                puzzle[i,j] = temp
+                options = np.setdiff1d(options,temp)
 
+    # Generate matrix of ones and zeros to determine which numbers appear in each clue
+    M = np.ones((5,10))
+    for i in range(5):
+        for j in range(10):
+            if j in puzzle[i,:]:
+                M[i,j] = 2
 
-print(puzzle-1)
+    rank = np.linalg.matrix_rank(M)
+
+# subtract 1 to make puzzle and code between [0,9]
+puzzle = puzzle-1
+code = code-1
+
+print('\n')
+print(puzzle[0,:], " one number is correct and in the correct place")
+print(puzzle[1,:], " nothing is correct")
+print(puzzle[2,:], " one number is correct but in the wrong place")
+print(puzzle[3,:], " one number is correct and in the correct place")
+print(puzzle[4,:], " two numbers are correct but in the wrong place")
+print('\n')
 input("Press Enter for answer...")
-print(code-1)
+print('\n')
+print(code)
+print('\n')
+
+
+
+
 
 
 # Currently this does not give a unique answer. An answer always exists but sometimes more than one solution exists. 
