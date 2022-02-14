@@ -44,7 +44,6 @@ def one_correct_wrong_place(index=None):
                 wrong_place_temp.remove(wrong_place[j])
 
     select = np.random.choice(range(len(wrong_place_temp)), 1, replace=False)
-
     indx = wrong_place_temp[select[0]]
     wrong_place.remove(indx)
     
@@ -54,13 +53,14 @@ def one_correct_wrong_place(index=None):
 
 def one_correct_right_place(index=None):
     mat4 = np.zeros((3,3))
+    right_place_temp = right_place.copy()
     if index != None:
         for j in range(len(right_place)):
             if all(i!=index for i in right_place[j]):
-                right_place.remove(tuples[j])
+                right_place_temp.remove(right_place[j])
 
-    select = np.random.choice(range(len(right_place)), 1, replace=False)
-    indx = right_place[select[0]]
+    select = np.random.choice(range(len(right_place_temp)), 1, replace=False)
+    indx = right_place_temp[select[0]]
     right_place.remove(indx)
     
     mat4[indx[0]][indx[1]] = 1
@@ -86,11 +86,18 @@ one_correct_right_place()
 # Clue 5
 sums = sum_columns(mats)
 print(sums)
+N = np.random.choice(range(2),1)
 if np.any(sums==0):
     indx = np.where(sums==0)[0][0]
-    one_correct_wrong_place(index=indx)
+    if N==0:
+        one_correct_wrong_place(index=indx)
+    else:
+        one_correct_right_place(index=indx)
 else:
-    one_correct_wrong_place()
+    if N==0:
+        one_correct_wrong_place()
+    else:
+        one_correct_right_place()
  
 # Construct matrix of code digits 
 puzzle = np.dot(mats,code)
