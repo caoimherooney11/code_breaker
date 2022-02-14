@@ -40,8 +40,8 @@ def one_correct_wrong_place(index=None):
     wrong_place_temp = wrong_place.copy()
     if index != None:
         for j in range(len(wrong_place)):
-            if all(i!=index for i in wrong_place[j]):
-                wrong_place_temp.remove(wrong_place[j])
+            i=wrong_place[j][1]
+            if i != index: wrong_place_temp.remove(wrong_place[j])
 
     select = np.random.choice(range(len(wrong_place_temp)), 1, replace=False)
     indx = wrong_place_temp[select[0]]
@@ -56,8 +56,9 @@ def one_correct_right_place(index=None):
     right_place_temp = right_place.copy()
     if index != None:
         for j in range(len(right_place)):
-            if all(i!=index for i in right_place[j]):
-                right_place_temp.remove(right_place[j])
+            #if all(i!=index for i in right_place[j]):
+            i=right_place[j][1]
+            if i != index: right_place_temp.remove(right_place[j])
 
     select = np.random.choice(range(len(right_place_temp)), 1, replace=False)
     indx = right_place_temp[select[0]]
@@ -70,7 +71,7 @@ def one_correct_right_place(index=None):
 def sum_columns(mats):
     sums = np.zeros(3)
     for i in range(len(mats)):
-        sums = sums + np.sum(mats[i],axis=1)
+        sums = sums + np.sum(mats[i],axis=0)
 
     return sums
 
