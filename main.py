@@ -1,4 +1,5 @@
 import numpy as np
+from puzzle_check import check
 
 # generate all numbers from [1,10] (will subtract 1 at end to make [0,9])
 n = np.arange(1,11)
@@ -88,6 +89,7 @@ one_correct_right_place()
 sums = sum_columns(mats)
 print(sums)
 N = np.random.choice(range(2),1)
+N = 0
 if np.any(sums==0):
     indx = np.where(sums==0)[0][0]
     if N==0:
@@ -126,6 +128,7 @@ while rank!=5:
 
     rank = np.linalg.matrix_rank(M)
 
+check(puzzle)
 # subtract 1 to make puzzle and code between [0,9]
 puzzle = puzzle-1
 code = code-1
