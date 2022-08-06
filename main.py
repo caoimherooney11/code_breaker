@@ -4,18 +4,16 @@ from puzzle_check import check
 # generate all numbers from [1,10] (will subtract 1 at end to make [0,9])
 n = np.arange(1,11)
 # generate random code
-code = np.random.choice(n, 3, replace=False)
 mats = []
 clues = []
+clue_index = []
 
-# matrix tuples
-wrong_place = [[0,1], [0,2], [1,0], [1,2], [2,0], [2,1]]
-right_place = [[0,0], [1,1], [2,2]]
 
 def nothing_correct():
     mat1 = np.zeros((3,3)) 
     mats.append(mat1)
     clues.append(" nothing is correct")
+    clue_index.append(0)
 
 def two_correct_wrong_place():
     mat2 = np.zeros((3,3))
@@ -35,6 +33,7 @@ def two_correct_wrong_place():
     mat2[indx2[0]][indx2[1]] = 1
     mats.append(mat2)
     clues.append(" two digits are correct but in the wrong place")
+    clue_index.append(1)
 
 def one_correct_wrong_place(index=None):
     mat3 = np.zeros((3,3)) 
@@ -51,6 +50,7 @@ def one_correct_wrong_place(index=None):
     mat3[indx[0]][indx[1]] = 1
     mats.append(mat3)
     clues.append(" one digit is correct but in the wrong place")
+    clue_index.append(2)
 
 def one_correct_right_place(index=None):
     mat4 = np.zeros((3,3))
@@ -68,6 +68,7 @@ def one_correct_right_place(index=None):
     mat4[indx[0]][indx[1]] = 1
     mats.append(mat4)
     clues.append(" one digit is correct and in the correct place")
+    clue_index.append(3)
 
 def sum_columns(mats):
     sums = np.zeros(3)
@@ -77,58 +78,69 @@ def sum_columns(mats):
     return sums
 
     
-# Clue 1: nothing is correct
-nothing_correct()
-# Clue 2: two digits are correct but in the wrong spots
-two_correct_wrong_place()
-# Clue 3: one digit correct but in the wrong place
-one_correct_wrong_place()
-# Clue 4: one digit is correct and in the right place
-one_correct_right_place()
-# Clue 5
-sums = sum_columns(mats)
-print(sums)
-N = np.random.choice(range(2),1)
-N = 0
-if np.any(sums==0):
-    indx = np.where(sums==0)[0][0]
-    if N==0:
-        one_correct_wrong_place(index=indx)
+unique = False
+while unique is False:
+    code = np.random.choice(n, 3, replace=False)
+    # matrix tuples
+    wrong_place = [[0,1], [0,2], [1,0], [1,2], [2,0], [2,1]]
+    right_place = [[0,0], [1,1], [2,2]]
+
+    # Clue 1: nothing is correct
+    nothing_correct()
+    # Clue 2: two digits are correct but in the wrong spots
+    two_correct_wrong_place()
+    # Clue 3: one digit correct but in the wrong place
+    one_correct_wrong_place()
+    # Clue 4: one digit is correct and in the right place
+    one_correct_right_place()
+    # Clue 5
+    sums = sum_columns(mats)
+    print(sums)
+    N = np.random.choice(range(2),1)
+    N = 0
+    if np.any(sums==0):
+        indx = np.where(sums==0)[0][0]
+        if N==0:
+            one_correct_wrong_place(index=indx)
+        else:
+            one_correct_right_place(index=indx)
     else:
-        one_correct_right_place(index=indx)
-else:
-    if N==0:
-        one_correct_wrong_place()
+        if N==0:
+            one_correct_wrong_place()
+        else:
+            one_correct_right_place()
+     
+    # Construct matrix of code digits 
+    puzzle = np.dot(mats,code)
+    
+    # Generate array of remaining digits
+    other = np.delete(n,code-1)
+    
+    # Randomly choose digits for missing puzzle entries
+    rank=0
+    while rank!=5:
+        for i in range(puzzle.shape[0]):
+            options = other
+            for j in range(puzzle.shape[1]):
+                if puzzle[i,j] not in code:
+                    temp = np.random.choice(options)
+                    puzzle[i,j] = temp
+                    options = np.setdiff1d(options,temp)
+    
+        # Generate matrix of ones and zeros to determine which numbers appear in each clue
+        M = np.ones((5,10))
+        for i in range(5):
+            for j in range(10):
+                if j in puzzle[i,:]:
+                    M[i,j] = 2
+    
+        rank = np.linalg.matrix_rank(M)
+    
+    unique = check(puzzle,clue_index, code)
+    if unique:
+        print('hurray!')
     else:
-        one_correct_right_place()
- 
-# Construct matrix of code digits 
-puzzle = np.dot(mats,code)
-
-# Generate array of remaining digits
-other = np.delete(n,code-1)
-
-# Randomly choose digits for missing puzzle entries
-rank=0
-while rank!=5:
-    for i in range(puzzle.shape[0]):
-        options = other
-        for j in range(puzzle.shape[1]):
-            if puzzle[i,j] not in code:
-                temp = np.random.choice(options)
-                puzzle[i,j] = temp
-                options = np.setdiff1d(options,temp)
-
-    # Generate matrix of ones and zeros to determine which numbers appear in each clue
-    M = np.ones((5,10))
-    for i in range(5):
-        for j in range(10):
-            if j in puzzle[i,:]:
-                M[i,j] = 2
-
-    rank = np.linalg.matrix_rank(M)
-
-check(puzzle)
+        print('we go again...')
 # subtract 1 to make puzzle and code between [0,9]
 puzzle = puzzle-1
 code = code-1
