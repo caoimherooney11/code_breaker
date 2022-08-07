@@ -1,7 +1,37 @@
 import numpy as np
 
-def check(puzzle, clue_index, code):
+def check(puzzle, clue_index):
+    """
+    Checks whether puzzle has unique solution
+
+    Parameters
+    ----------
+    puzzle : ndarray 
+        Puzzle matrix
+    clue_index : array of int
+        Indicator for which clue applies to each row of puzzle matrix
+
+    Returns
+    -------
+    Boolean True/False as to whether puzzle has unique solution
+    """
+
     def permute(arr, num_dig):
+        """ 
+        Creates list of all possible 3-digit codes where every code digit is unique
+
+        Parameters
+        ----------
+        arr : ndarray 
+            Array of possible digits of codes
+        num_dig : int
+            Number of digits in code
+
+        Returns
+        -------
+        List of all possible 3-digit codes where every code digit is unique
+        """
+
         num_perm = 1
         for j in range(num_dig):
             num_perm *= len(arr)-j
@@ -21,6 +51,17 @@ def check(puzzle, clue_index, code):
     def repeat(clue, n):
         return np.stack([clue for _ in range(n)], axis=0)
 
+    def filter_num_digits(all_codes, clue, num_digits):
+        num_common = (1*np.isin(all_codes, clue)).sum(axis=1)
+        return all_codes[num_common==num_digits]
+
+    def filter_digit_loc(all_codes, clue, action='remove'):
+        clue_rp = repeat(clue, all_codes.shape[0])
+        diff = all_codes - clue_rp
+        if action=='remove':
+            return all_codes[~np.any(diff==0,axis=1)]
+        elif action=='keep':
+            return all_codes[np.any(diff==0,axis=1)]
 
     all_codes = permute(range(1,11), 3)
 
@@ -37,39 +78,25 @@ def check(puzzle, clue_index, code):
         elif indx==1:
             clue2 = puzzle[k]
             # remove all codes that do not contain two digits of clue 2
-            num_common = (1*np.isin(all_codes_new, clue2)).sum(axis=1)
-            all_codes_new = all_codes_new[num_common==2]
-            
+            all_codes_new = filter_num_digits(all_codes_new, clue2, 2)  
             # remove all codes that have clue digits in correct place
-            clue2_rp = repeat(clue2,all_codes_new.shape[0])
-            diff = all_codes_new - clue2_rp
-            all_codes_new = all_codes_new[~np.any(diff==0,axis=1)]
+            all_codes_new = filter_digit_loc(all_codes_new, clue2, 'remove')
 
         ##### check Clue 3 (one correct wrong place)
         elif indx==2:
             clue3 = puzzle[k]
             # remove all codes that do not contain exactly one digits of clue 3
-            num_common = (1*np.isin(all_codes_new, clue3)).sum(axis=1)
-            all_codes_new = all_codes_new[num_common==1]
-            
+            all_codes_new = filter_num_digits(all_codes_new, clue3, 1)  
             # remove all codes that have clue digit in correct place
-            clue3_rp = repeat(clue3,all_codes_new.shape[0])
-            diff = all_codes_new - clue3_rp
-            all_codes_new = all_codes_new[~np.any(diff==0,axis=1)]
+            all_codes_new = filter_digit_loc(all_codes_new, clue3, 'remove')
 
         ##### check Clue 4 (one correct right place)
         elif indx==3:
             clue4 = puzzle[k]
             # remove all codes that do not contain exactly one digits of clue 4
-            num_common = (1*np.isin(all_codes_new, clue4)).sum(axis=1)
-            all_codes_new = all_codes_new[num_common==1]
-            
+            all_codes_new = filter_num_digits(all_codes_new, clue4, 1)  
             # keep only codes that have clue digit in correct place
-            clue4_rp = repeat(clue4,all_codes_new.shape[0])
-            diff = all_codes_new - clue4_rp
-            all_codes_new = all_codes_new[np.any(diff==0,axis=1)]
-
-
+            all_codes_new = filter_digit_loc(all_codes_new, clue4, 'keep')
 
     if all_codes_new.shape[0]==1:
         return True
