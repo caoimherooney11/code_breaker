@@ -18,7 +18,7 @@ def check(puzzle, clue_index):
 
     def permute(arr, num_dig):
         """ 
-        Creates list of all possible 3-digit codes where every code digit is unique
+        Returns list of all possible 3-digit codes where every code digit is unique
 
         Parameters
         ----------
@@ -26,10 +26,6 @@ def check(puzzle, clue_index):
             Array of possible digits of codes
         num_dig : int
             Number of digits in code
-
-        Returns
-        -------
-        List of all possible 3-digit codes where every code digit is unique
         """
 
         num_perm = 1
@@ -49,13 +45,47 @@ def check(puzzle, clue_index):
         return permutations
     
     def repeat(clue, n):
+        """ 
+        Returns array of clue repeated n times
+
+        Parameters
+        ----------
+        clue : ndarray 
+            Clue to be repeated 
+        n : int
+            Length of array
+        """
         return np.stack([clue for _ in range(n)], axis=0)
 
     def filter_num_digits(all_codes, clue, num_digits):
+        """ 
+        Removes all codes that do not contain correct number of digits as clue
+
+        Parameters
+        ----------
+        all_codes : ndarray
+            List of codes to be filtered
+        clue : ndarray 
+            Clue to be compared with all_codes
+        num_digits : int
+            Number of digits codes in all_codes must share with clue
+        """
         num_common = (1*np.isin(all_codes, clue)).sum(axis=1)
         return all_codes[num_common==num_digits]
 
     def filter_digit_loc(all_codes, clue, action='remove'):
+        """ 
+        Removes/Keeps all codes where digits are in the same position as clue
+
+        Parameters
+        ----------
+        all_codes : ndarray
+            List of codes to be filtered
+        clue : ndarray 
+            Clue to be compared with all_codes
+        action : str
+            'remove' or 'keep' codes that have same digits in same position as clue
+        """
         clue_rp = repeat(clue, all_codes.shape[0])
         diff = all_codes - clue_rp
         if action=='remove':
